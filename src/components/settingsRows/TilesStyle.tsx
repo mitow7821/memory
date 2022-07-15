@@ -1,5 +1,4 @@
 import type { Settings, TileStyle } from "../../types";
-import classNames from "classnames";
 import { memo } from "react";
 
 interface Props {
@@ -22,24 +21,26 @@ export default memo(function TilesStyle({
   ];
 
   return (
-    <div className="grid">
-      <span>Select tiles style</span>
+    <div className="grid gap-2">
+      <span className="text-prima ry/80 font-semibold">Select tiles style</span>
 
-      {tiles.map((tile) => {
-        const isSelected = tilesStyle === tile.value;
+      <div className="grid grid-cols-2 gap-3">
+        {tiles.map((tile) => {
+          const isSelected = tilesStyle === tile.value;
 
-        return (
-          <button
-            key={tile.value}
-            className={classNames({
-              "bg-red-500": isSelected,
-            })}
-            onClick={() => changeSettingValues({ tilesStyle: tile.value })}
-          >
-            {tile.name}
-          </button>
-        );
-      })}
+          return (
+            <button
+              key={tile.value}
+              className={`text-white rounded-full py-1.5 ${
+                isSelected ? "bg-primary" : "bg-secondary"
+              }`}
+              onClick={() => changeSettingValues({ tilesStyle: tile.value })}
+            >
+              {tile.name}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 });

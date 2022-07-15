@@ -10,24 +10,26 @@ interface Props {
 }
 
 const BoardSize = ({ boardSize, changeSettingValues }: Props) => (
-  <div className="grid">
-    <span>Select tiles style</span>
+  <div className="grid gap-2">
+    <span className="text-primary/80 font-semibold">Select tiles style</span>
 
-    {boardSizeOptions.map((option) => {
-      const isSelected = option === boardSize;
+    <div className="grid grid-cols-3 gap-3">
+      {boardSizeOptions.map((option) => {
+        const isSelected = option === boardSize;
 
-      return (
-        <button
-          key={option}
-          className={classNames({
-            "bg-red-500": isSelected,
-          })}
-          onClick={() => changeSettingValues({ boardSize: option })}
-        >
-          {option}
-        </button>
-      );
-    })}
+        return (
+          <button
+            key={option}
+            className={`text-white rounded-full py-1.5 ${
+              isSelected ? "bg-primary" : "bg-secondary"
+            }`}
+            onClick={() => changeSettingValues({ boardSize: option })}
+          >
+            {option}
+          </button>
+        );
+      })}
+    </div>
   </div>
 );
 

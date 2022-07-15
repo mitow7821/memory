@@ -3,6 +3,9 @@ import className from "classnames";
 
 interface Props {
   board: Array<number[]>;
+  currentPlayer: number;
+  setPlayersScore: React.Dispatch<React.SetStateAction<number[]>>;
+  nextPlayer: () => void;
 }
 
 interface SelectedTile {
@@ -11,10 +14,14 @@ interface SelectedTile {
   xIndex: number;
 }
 
-export default function Board({ board }: Props) {
+export default function Board({
+  board,
+  nextPlayer,
+  setPlayersScore,
+  currentPlayer,
+}: Props) {
   const [firstTile, setFirstTile] = useState<SelectedTile | null>(null);
   const [secondTile, setSecondTile] = useState<SelectedTile | null>(null);
-  const [points, setPoints] = useState(0);
   const [foundTiles, setFoundTiles] = useState<number[]>([]);
 
   function resetSelectedTiles() {
@@ -39,14 +46,19 @@ export default function Board({ board }: Props) {
     }
 
     if (firstTile.value === secondTile.value) {
-      setPoints((e) => e + 1);
-
       setFoundTiles((f) => [...f, firstTile.value]);
+      setPlayersScore((prev) => {
+        const scores = [...prev];
+        scores[currentPlayer] += 1;
+
+        return scores;
+      });
     }
 
     setTimeout(() => {
       resetSelectedTiles();
-    }, 1000);
+      nextPlayer();
+    }, 500);
   }, [secondTile, firstTile]);
 
   const isTileSelected = (tile: SelectedTile) =>
@@ -60,33 +72,29 @@ export default function Board({ board }: Props) {
   const isTileFound = (value: number) => foundTiles.includes(value);
 
   return (
-    <>
-      {points}
-      {JSON.stringify(firstTile)}
-      {JSON.stringify(secondTile)}
-      <div className="flex flex-col gap-3">
-        {board.map((row, yIndex) => (
-          <div className="flex gap-5" key={yIndex}>
-            {row.map((value, xIndex) => {
-              const tile = { value, xIndex, yIndex };
+    <div className="flex flex-col gap-3.5 justify-self-center mx-auto w-min">
+      {board.map((row, yIndex) => (
+        <div className="flex gap-4" key={yIndex}>
+          {row.map((value, xIndex) => {
+            const tile = { value, xIndex, yIndex };
 
-              return (
-                <div
-                  key={xIndex}
-                  onClick={() => onTileClick(tile)}
-                  className={`bg-gray-100 w-10 h-10 ${className({
-                    "bg-red-500":
-                      isTileSelected(tile) && !isTileFound(tile.value),
-                    "!bg-green-500": isTileFound(tile.value),
-                  })}`}
-                >
-                  {(isTileFound(tile.value) || isTileSelected(tile)) && value}
-                </div>
-              );
-            })}
-          </div>
-        ))}
-      </div>
-    </>
+            return (
+              <div
+                key={xIndex}
+                onClick={() => onTileClick(tile)}
+                className={`rounded-full bg-dark w-16 h-16 grid place-content-center text-white text-2xl ${className(
+                  {
+                    "!bg-accent": isTileSelected(tile),
+                    "bg-secondary": isTileFound(tile.value),
+                  }
+                )}`}
+              >
+                {(isTileFound(tile.value) || isTileSelected(tile)) && value}
+              </div>
+            );
+          })}
+        </div>
+      ))}
+    </div>
   );
 }

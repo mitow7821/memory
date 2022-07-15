@@ -18,23 +18,32 @@ export default function Home(props: Props) {
   }
 
   return (
-    <div>
-      <TilesStyle
-        tilesStyle={props.settings.tilesStyle}
-        changeSettingValues={changeSettingValues}
-      />
+    <div className="bg-dark w-screen h-screen flex flex-col justify-center items-center gap-10">
+      <h1 className="text-white text-[1.7rem] font-semibold">memory</h1>
 
-      <Players
-        players={props.settings.players}
-        changeSettingValues={changeSettingValues}
-      />
+      <div className="w-[450px] bg-white rounded-2xl px-8 py-10 grid gap-5">
+        <TilesStyle
+          tilesStyle={props.settings.tilesStyle}
+          changeSettingValues={changeSettingValues}
+        />
 
-      <BoardSize
-        boardSize={props.settings.boardSize}
-        changeSettingValues={changeSettingValues}
-      />
+        <Players
+          players={props.settings.players}
+          changeSettingValues={changeSettingValues}
+        />
 
-      <Link to="memory">Start game</Link>
+        <BoardSize
+          boardSize={props.settings.boardSize}
+          changeSettingValues={changeSettingValues}
+        />
+
+        <Link
+          to="memory"
+          className="bg-accent text-white rounded-full text-center font-medium py-2 mt-3"
+        >
+          Start game
+        </Link>
+      </div>
     </div>
   );
 }
