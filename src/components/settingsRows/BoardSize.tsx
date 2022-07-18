@@ -1,7 +1,5 @@
 import type { Settings, SizeOfTheBoard } from "../../types";
 import { boardSizeOptions } from "../../types";
-
-import classNames from "classnames";
 import { memo } from "react";
 
 interface Props {
@@ -11,9 +9,9 @@ interface Props {
 
 const BoardSize = ({ boardSize, changeSettingValues }: Props) => (
   <div className="grid gap-2">
-    <span className="text-primary/80 font-semibold">Select tiles style</span>
+    <span className="text-primary/80 font-semibold">Board size</span>
 
-    <div className="grid grid-cols-3 gap-3">
+    <div className="grid grid-cols-2 gap-3">
       {boardSizeOptions.map((option) => {
         const isSelected = option === boardSize;
 

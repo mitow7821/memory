@@ -3,6 +3,7 @@ import Players from "../components/settingsRows/Players";
 import TilesStyle from "../components/settingsRows/TilesStyle";
 import { Settings } from "../types";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   settings: Settings;
@@ -10,6 +11,8 @@ interface Props {
 }
 
 export default function Home(props: Props) {
+  const { t } = useTranslation();
+
   function changeSettingValues(newSettings: Partial<Settings>) {
     props.setSettings((settings) => ({
       ...settings,
@@ -41,7 +44,7 @@ export default function Home(props: Props) {
           to="memory"
           className="bg-accent text-white rounded-full text-center font-medium py-2 mt-3"
         >
-          Start game
+          {t("startGame")}
         </Link>
       </div>
     </div>

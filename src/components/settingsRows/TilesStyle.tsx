@@ -22,7 +22,7 @@ export default memo(function TilesStyle({
 
   return (
     <div className="grid gap-2">
-      <span className="text-prima ry/80 font-semibold">Select tiles style</span>
+      <span className="text-primary/80 font-semibold">Tiles style</span>
 
       <div className="grid grid-cols-2 gap-3">
         {tiles.map((tile) => {

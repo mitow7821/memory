@@ -3,7 +3,7 @@ type TileStyle = "numbers" | "icons";
 const playersOptions = [1, 2, 3, 4] as const;
 type NumberOfPlayers = typeof playersOptions[number];
 
-const boardSizeOptions = [4, 5, 6] as const;
+const boardSizeOptions = [2, 4, 6] as const;
 type SizeOfTheBoard = typeof boardSizeOptions[number];
 
 interface Settings {

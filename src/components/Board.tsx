@@ -6,9 +6,11 @@ interface Props {
   currentPlayer: number;
   setPlayersScore: React.Dispatch<React.SetStateAction<number[]>>;
   nextPlayer: () => void;
+  stopTimer: () => void;
+  setMoves: React.Dispatch<React.SetStateAction<number>>;
 }
 
-interface SelectedTile {
+interface Tile {
   value: number;
   yIndex: number;
   xIndex: number;
@@ -19,25 +21,49 @@ export default function Board({
   nextPlayer,
   setPlayersScore,
   currentPlayer,
+  stopTimer,
+  setMoves,
 }: Props) {
-  const [firstTile, setFirstTile] = useState<SelectedTile | null>(null);
-  const [secondTile, setSecondTile] = useState<SelectedTile | null>(null);
-  const [foundTiles, setFoundTiles] = useState<number[]>([]);
+  const [firstTile, setFirstTile] = useState<Tile | null>(null);
+  const [secondTile, setSecondTile] = useState<Tile | null>(null);
+  const [foundTiles, setFoundTiles] = useState<Tile[]>([]);
 
   function resetSelectedTiles() {
     setFirstTile(null);
     setSecondTile(null);
   }
 
-  function onTileClick(tile: SelectedTile) {
-    console.log(tile);
+  function onTileClick(tile: Tile) {
+    // Prevent found tiles selection
+    if (isTileFound(tile)) {
+      return;
+    }
+
     if (!firstTile) {
       setFirstTile(tile);
 
       return;
     }
 
+    // Prevent selection while reset function is about to run (timeout)
+    // Prevent selection of first selected tile
+    if (
+      secondTile ||
+      (firstTile.xIndex === tile.xIndex && firstTile.yIndex === tile.yIndex)
+    ) {
+      return;
+    }
+
     setSecondTile(tile);
+  }
+
+  function addPointForCurrentPlayer() {
+    setPlayersScore((prev) => {
+      const scores = [...prev];
+      scores[currentPlayer] += 1;
+
+      return scores;
+    });
   }
 
   useEffect(() => {
@@ -46,30 +72,48 @@ export default function Board({
     }
 
     if (firstTile.value === secondTile.value) {
-      setFoundTiles((f) => [...f, firstTile.value]);
-      setPlayersScore((prev) => {
-        const scores = [...prev];
-        scores[currentPlayer] += 1;
-
-        return scores;
-      });
+      setFoundTiles((f) => [...f, firstTile, secondTile]);
+      addPointForCurrentPlayer();
     }
+
+    setMoves((e) => e + 1);
 
     setTimeout(() => {
       resetSelectedTiles();
       nextPlayer();
-    }, 500);
-  }, [secondTile, firstTile]);
+    }, 600);
+  }, [secondTile]);
 
-  const isTileSelected = (tile: SelectedTile) =>
-    [firstTile, secondTile].some(
-      (e) =>
-        e?.value === tile.value &&
-        e?.xIndex === tile.xIndex &&
-        e?.yIndex === tile.yIndex
-    );
+  const compareTiles = (firstTile: Tile | null, secondTile: Tile | null) =>
+    firstTile?.value === secondTile?.value &&
+    firstTile?.xIndex === secondTile?.xIndex &&
+    firstTile?.yIndex === secondTile?.yIndex;
 
-  const isTileFound = (value: number) => foundTiles.includes(value);
+  const allTiles = board.reduce<Tile[]>((acc, row, yIndex) => {
+    row.forEach((value, xIndex) => {
+      acc.push({ value, yIndex, xIndex });
+    });
+
+    return acc;
+  }, []);
+
+  const isFinished = allTiles.every((tile) =>
+    foundTiles.some((e) => compareTiles(e, tile))
+  );
+
+  useEffect(() => {
+    if (!isFinished) {
+      return;
+    }
+
+    stopTimer();
+  }, [isFinished]);
+
+  const isTileSelected = (tile: Tile) =>
+    [firstTile, secondTile].some((e) => compareTiles(e, tile));
+
+  const isTileFound = (tile: Tile | null) =>
+    foundTiles.some((e) => compareTiles(e, tile));
 
   return (
     <div className="flex flex-col gap-3.5 justify-self-center mx-auto w-min">
@@ -80,16 +124,28 @@ export default function Board({
 
             return (
               <div
+                className="grid w-16 h-16 place-content-center relative"
                 key={xIndex}
-                onClick={() => onTileClick(tile)}
-                className={`rounded-full bg-dark w-16 h-16 grid place-content-center text-white text-2xl ${className(
-                  {
-                    "!bg-accent": isTileSelected(tile),
-                    "bg-secondary": isTileFound(tile.value),
-                  }
-                )}`}
               >
-                {(isTileFound(tile.value) || isTileSelected(tile)) && value}
+                <div
+                  onClick={() => onTileClick(tile)}
+                  className={`rounded-full bg-dark w-16 h-16 grid place-content-center transition-transform duration-500 ${className(
+                    {
+                      "bg-accent": isTileSelected(tile),
+                      "bg-secondary": isTileFound(tile),
+                    }
+                  )}`}
+                  style={{
+                    transform:
+                      isTileSelected(tile) || isTileFound(tile)
+                        ? "rotateY(180deg)"
+                        : "",
+                  }}
+                ></div>
+
+                <span className={"center text-white text-2xl"}>
+                  {(isTileFound(tile) || isTileSelected(tile)) && value}
+                </span>
               </div>
             );
           })}

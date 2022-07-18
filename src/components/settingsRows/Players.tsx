@@ -9,7 +9,7 @@ interface Props {
 
 const Players = ({ players, changeSettingValues }: Props) => (
   <div className="grid gap-2">
-    <span className="text-primary/80 font-semibold">Select tiles style</span>
+    <span className="text-primary/80 font-semibold">Number of players</span>
 
     <div className="grid grid-cols-4 gap-3">
       {playersOptions.map((option) => {
