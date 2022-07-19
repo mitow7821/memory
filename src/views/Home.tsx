@@ -25,10 +25,10 @@ export default function Home(props: Props) {
       <h1 className="text-white text-[1.7rem] font-semibold">memory</h1>
 
       <div className="w-[450px] bg-white rounded-2xl px-8 py-10 grid gap-5">
-        <TilesStyle
+        {/* <TilesStyle
           tilesStyle={props.settings.tilesStyle}
           changeSettingValues={changeSettingValues}
-        />
+        /> */}
 
         <Players
           players={props.settings.players}
