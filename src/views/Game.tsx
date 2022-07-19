@@ -48,6 +48,7 @@ export default function Game(props: Props) {
   const [time, setTime] = useState(0);
   const [delay, setDelay] = useState<number | null>(1000);
   const [foundTiles, setFoundTiles] = useState<Tile[]>([]);
+  const [showModal, setShowModal] = useState(false);
 
   const formattedTime = new Date(time * 1000).toISOString().slice(14, 19);
   const allTiles = useMemo(
@@ -99,7 +100,7 @@ export default function Game(props: Props) {
       return;
     }
 
-    if (currentPlayerId - 1 < props.settings.players) {
+    if (currentPlayerId < props.settings.players) {
       setCurrentPlayerId((e) => e + 1);
 
       return;
@@ -159,12 +160,19 @@ export default function Game(props: Props) {
       return;
     }
 
+    setTimeout(() => {
+      setShowModal(isFinishedRef.current);
+    }, 600);
     setDelay(null);
+
+    return () => {
+      setShowModal(false);
+    };
   }, [isGameFinished]);
 
   return (
     <>
-      <div className="py-10 px-20 flex flex-col justify-between h-screen">
+      <div className="py-8 px-20 flex flex-col justify-between h-screen">
         <div
           className={`grid  items-center ${
             props.settings.players !== 1 ? "grid-cols-3" : "grid-cols-2"
@@ -205,28 +213,38 @@ export default function Game(props: Props) {
         <div className="flex gap-5 justify-center">
           {props.settings.players !== 1 ? (
             playersData.map(({ score, id }) => (
-              <div
-                className={`z-10 flex gap-3 whitespace-nowrap items-center justify-between py-2 px-4 rounded-md relative w-1/4 ${
-                  id === currentPlayerId
-                    ? "bg-accent text-white after:bg-accent after:w-5 after:h-5 after:-top-2 after:rotate-45 after:left-1/2 after:-translate-x-1/2 after:absolute"
-                    : "bg-secondary text-dark"
-                }`}
-                key={id}
-              >
-                <span className="text-sm mt-0.5 font-medium">Player {id}</span>
+              <div className="w-1/4 flex flex-col gap-2 -mb-2">
+                <div
+                  className={`relative flex gap-3 whitespace-nowrap items-center justify-between py-2 px-4 rounded-md  ${
+                    id === currentPlayerId
+                      ? "bg-accent text-white after:bg-accent after:w-5 after:h-5 after:-top-2 after:rotate-45 after:left-1/2 after:-translate-x-1/2 after:absolute"
+                      : "bg-secondary text-dark"
+                  }`}
+                  key={id}
+                >
+                  <span className="text-sm mt-0.5 font-medium">
+                    Player {id}
+                  </span>
 
-                <h2 className="font-semibold text-xl">{score}</h2>
+                  <h2 className="font-semibold text-xl">{score}</h2>
+                </div>
+
+                {id === currentPlayerId && (
+                  <span className="text-xs font-semibold text-primary/80 mx-auto -tracking-tighter">
+                    CURRENT TURN
+                  </span>
+                )}
               </div>
             ))
           ) : (
             <>
-              <div className="z-10 flex gap-3 whitespace-nowrap items-center justify-between py-2 px-4 rounded-md bg-secondary text-dark w-1/4 relative">
+              <div className="flex gap-3 whitespace-nowrap items-center justify-between py-2 px-4 rounded-md bg-accent text-white w-1/4">
                 <span className="text-sm mt-0.5 font-medium">Time</span>
 
                 <h2 className="font-semibold text-xl">{formattedTime}</h2>
               </div>
 
-              <div className="z-10 flex gap-3 whitespace-nowrap items-center justify-between py-2 px-4 rounded-md bg-secondary text-dark w-1/4 relative">
+              <div className="flex gap-3 whitespace-nowrap items-center justify-between py-2 px-4 rounded-md bg-secondary text-dark w-1/4">
                 <span className="text-sm mt-0.5 font-medium">Moves</span>
 
                 <h2 className="font-semibold text-xl">
@@ -238,8 +256,8 @@ export default function Game(props: Props) {
         </div>
       </div>
 
-      {isGameFinished && (
-        <Modal>
+      {showModal && (
+        <Modal heading="Koniec gry" setShowModal={setShowModal}>
           <div className="flex flex-col justify-between flex-grow gap-3">
             <div>
               <h1 className="text-white/90 text-[1.35rem] font-semibold mt-0.5 mb-2">
@@ -269,6 +287,13 @@ export default function Game(props: Props) {
                         <span className="text-sm">Moves:</span>
                         <span className="font-medium">{moves}</span>
                       </div>
+
+                      {props.settings.players === 1 && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm">Time:</span>
+                          <span className="font-medium">{formattedTime}</span>
+                        </div>
+                      )}
                     </div>
                   ))}
               </div>
