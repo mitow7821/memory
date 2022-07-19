@@ -14,3 +14,9 @@ interface Settings {
 
 export { playersOptions, boardSizeOptions };
 export type { TileStyle, NumberOfPlayers, SizeOfTheBoard, Settings };
+
+export interface Tile {
+  value: number;
+  yIndex: number;
+  xIndex: number;
+}

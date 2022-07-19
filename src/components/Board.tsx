@@ -1,37 +1,23 @@
 import { useEffect, useState } from "react";
 import className from "classnames";
+import { Tile } from "../types";
+import { compareTiles } from "../helpers/compareTiles";
 
 interface Props {
   board: Array<number[]>;
-  currentPlayer: number;
-  setPlayersScore: React.Dispatch<React.SetStateAction<number[]>>;
   nextPlayer: () => void;
-  stopTimer: () => void;
-  setMoves: React.Dispatch<React.SetStateAction<number>>;
-}
-
-interface Tile {
-  value: number;
-  yIndex: number;
-  xIndex: number;
+  tilesFound: (first: Tile, second: Tile) => void;
+  foundTiles: Tile[];
 }
 
 export default function Board({
   board,
   nextPlayer,
-  setPlayersScore,
-  currentPlayer,
-  stopTimer,
-  setMoves,
+  tilesFound,
+  foundTiles,
 }: Props) {
   const [firstTile, setFirstTile] = useState<Tile | null>(null);
   const [secondTile, setSecondTile] = useState<Tile | null>(null);
-  const [foundTiles, setFoundTiles] = useState<Tile[]>([]);
-
-  function resetSelectedTiles() {
-    setFirstTile(null);
-    setSecondTile(null);
-  }
 
   function onTileClick(tile: Tile) {
     // Prevent found tiles selection
@@ -46,7 +32,7 @@ export default function Board({
     }
 
     // Prevent selection while reset function is about to run (timeout)
-    // Prevent selection of first selected tile
+    // Prevent duplicated selection of first selected tile
     if (
       secondTile ||
       (firstTile.xIndex === tile.xIndex && firstTile.yIndex === tile.yIndex)
@@ -57,57 +43,22 @@ export default function Board({
     setSecondTile(tile);
   }
 
-  function addPointForCurrentPlayer() {
-    setPlayersScore((prev) => {
-      const scores = [...prev];
-      scores[currentPlayer] += 1;
-
-      return scores;
-    });
-  }
-
   useEffect(() => {
     if (!secondTile || !firstTile) {
       return;
     }
 
     if (firstTile.value === secondTile.value) {
-      setFoundTiles((f) => [...f, firstTile, secondTile]);
-      addPointForCurrentPlayer();
+      tilesFound(firstTile, secondTile);
     }
 
-    setMoves((e) => e + 1);
-
     setTimeout(() => {
-      resetSelectedTiles();
+      setFirstTile(null);
+      setSecondTile(null);
+
       nextPlayer();
     }, 600);
   }, [secondTile]);
-
-  const compareTiles = (firstTile: Tile | null, secondTile: Tile | null) =>
-    firstTile?.value === secondTile?.value &&
-    firstTile?.xIndex === secondTile?.xIndex &&
-    firstTile?.yIndex === secondTile?.yIndex;
-
-  const allTiles = board.reduce<Tile[]>((acc, row, yIndex) => {
-    row.forEach((value, xIndex) => {
-      acc.push({ value, yIndex, xIndex });
-    });
-
-    return acc;
-  }, []);
-
-  const isFinished = allTiles.every((tile) =>
-    foundTiles.some((e) => compareTiles(e, tile))
-  );
-
-  useEffect(() => {
-    if (!isFinished) {
-      return;
-    }
-
-    stopTimer();
-  }, [isFinished]);
 
   const isTileSelected = (tile: Tile) =>
     [firstTile, secondTile].some((e) => compareTiles(e, tile));
