@@ -20,3 +20,9 @@ export interface Tile {
   yIndex: number;
   xIndex: number;
 }
+
+export interface PlayerData {
+  id: number;
+  score: number;
+  moves: number;
+}

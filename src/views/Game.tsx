@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Board from "../components/Board";
+import BoardFooter from "../components/BoardFooter";
+import BoardHeader from "../components/BoardHeader";
+import EndModal from "../components/EndModal";
 import Modal from "../components/Modal";
 import { compareTiles } from "../helpers/compareTiles";
 import shuffle from "../helpers/shuffleArray";
-import { Settings, SizeOfTheBoard, Tile } from "../types";
+import { PlayerData, Settings, SizeOfTheBoard, Tile } from "../types";
 
 interface Props {
   settings: Settings;
@@ -35,12 +38,6 @@ function generateBoard(boardSize: SizeOfTheBoard) {
   return newBoard;
 }
 
-interface PlayerData {
-  id: number;
-  score: number;
-  moves: number;
-}
-
 export default function Game(props: Props) {
   const [board, setBoard] = useState<Array<number[]>>([]);
   const [playersData, setPlayersData] = useState<PlayerData[]>([]);
@@ -61,10 +58,6 @@ export default function Game(props: Props) {
         return acc;
       }, []),
     [board]
-  );
-
-  const currentPlayerData = playersData.find(
-    ({ id }) => id === currentPlayerId
   );
 
   const isGameFinished = useMemo(
@@ -121,6 +114,10 @@ export default function Game(props: Props) {
     }
   }
 
+  function resetBoard() {
+    setBoard(generateBoard(props.settings.boardSize));
+  }
+
   useEffect(() => {
     initPlayersData();
     setCurrentPlayerId(1);
@@ -130,7 +127,7 @@ export default function Game(props: Props) {
   }, [board]);
 
   useEffect(() => {
-    setBoard(generateBoard(props.settings.boardSize));
+    resetBoard();
     initPlayersData();
 
     setDelay(1000);
@@ -170,38 +167,15 @@ export default function Game(props: Props) {
     };
   }, [isGameFinished]);
 
+  const isSinglePlayer = props.settings.players === 1;
   return (
     <>
       <div className="py-8 px-20 flex flex-col justify-between h-screen">
-        <div
-          className={`grid  items-center ${
-            props.settings.players !== 1 ? "grid-cols-3" : "grid-cols-2"
-          }`}
-        >
-          <h1 className="text-primary text-[1.7rem] font-semibold">memory</h1>
-
-          {props.settings.players !== 1 && (
-            <h2 className="font-semibold text-lg text-primary justify-self-center">
-              Time: {formattedTime}
-            </h2>
-          )}
-
-          <div className="flex gap-3 items-center justify-self-end">
-            <button
-              className="bg-accent text-white rounded-full py-2 px-6 text-sm font-semibold"
-              onClick={() => setBoard(generateBoard(props.settings.boardSize))}
-            >
-              Restart
-            </button>
-
-            <Link
-              to="/"
-              className="bg-gray text-primary rounded-full py-2 px-5 text-sm font-semibold"
-            >
-              New Game
-            </Link>
-          </div>
-        </div>
+        <BoardHeader
+          formattedTime={formattedTime}
+          isSinglePlayer={isSinglePlayer}
+          resetBoard={resetBoard}
+        />
 
         <Board
           board={board}
@@ -210,114 +184,22 @@ export default function Game(props: Props) {
           nextPlayer={nextPlayer}
         />
 
-        <div className="flex gap-5 justify-center">
-          {props.settings.players !== 1 ? (
-            playersData.map(({ score, id }) => (
-              <div className="w-1/4 flex flex-col gap-2 -mb-2">
-                <div
-                  className={`relative flex gap-3 whitespace-nowrap items-center justify-between py-2 px-4 rounded-md  ${
-                    id === currentPlayerId
-                      ? "bg-accent text-white after:bg-accent after:w-5 after:h-5 after:-top-2 after:rotate-45 after:left-1/2 after:-translate-x-1/2 after:absolute"
-                      : "bg-secondary text-dark"
-                  }`}
-                  key={id}
-                >
-                  <span className="text-sm mt-0.5 font-medium">
-                    Player {id}
-                  </span>
-
-                  <h2 className="font-semibold text-xl">{score}</h2>
-                </div>
-
-                {id === currentPlayerId && (
-                  <span className="text-xs font-semibold text-primary/80 mx-auto -tracking-tighter">
-                    CURRENT TURN
-                  </span>
-                )}
-              </div>
-            ))
-          ) : (
-            <>
-              <div className="flex gap-3 whitespace-nowrap items-center justify-between py-2 px-4 rounded-md bg-accent text-white w-1/4">
-                <span className="text-sm mt-0.5 font-medium">Time</span>
-
-                <h2 className="font-semibold text-xl">{formattedTime}</h2>
-              </div>
-
-              <div className="flex gap-3 whitespace-nowrap items-center justify-between py-2 px-4 rounded-md bg-secondary text-dark w-1/4">
-                <span className="text-sm mt-0.5 font-medium">Moves</span>
-
-                <h2 className="font-semibold text-xl">
-                  {currentPlayerData?.moves ?? 0}
-                </h2>
-              </div>
-            </>
-          )}
-        </div>
+        <BoardFooter
+          formattedTime={formattedTime}
+          isSinglePlayer={isSinglePlayer}
+          playersData={playersData}
+          currentPlayerId={currentPlayerId}
+        />
       </div>
 
       {showModal && (
-        <Modal heading="Koniec gry" setShowModal={setShowModal}>
-          <div className="flex flex-col justify-between flex-grow gap-3">
-            <div>
-              <h1 className="text-white/90 text-[1.35rem] font-semibold mt-0.5 mb-2">
-                Koniec gry
-              </h1>
-
-              <div className="grid gap-3">
-                {[...playersData]
-                  .sort((a, b) => b.score - a.score)
-                  .map(({ score, moves, id }) => (
-                    <div
-                      className={
-                        "grid py-1.5 px-3 rounded-md bg-white text-primary"
-                      }
-                      key={id}
-                    >
-                      <span className="text-lg mt-0.5 pb-1 mb-1 font-semibold border-b border-black/25">
-                        Player {id}
-                      </span>
-
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Score:</span>
-                        <span className="font-medium">{score}</span>
-                      </div>
-
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Moves:</span>
-                        <span className="font-medium">{moves}</span>
-                      </div>
-
-                      {props.settings.players === 1 && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Time:</span>
-                          <span className="font-medium">{formattedTime}</span>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                className="bg-accent text-white rounded-full py-2 px-6 text-sm font-semibold"
-                onClick={() =>
-                  setBoard(generateBoard(props.settings.boardSize))
-                }
-              >
-                Restart
-              </button>
-
-              <Link
-                to="/"
-                className="bg-white text-primary rounded-full py-2 px-5 text-sm font-semibold text-center"
-              >
-                New Game
-              </Link>
-            </div>
-          </div>
-        </Modal>
+        <EndModal
+          setShowModal={setShowModal}
+          formattedTime={formattedTime}
+          playersData={playersData}
+          isSinglePlayer={isSinglePlayer}
+          resetBoard={resetBoard}
+        />
       )}
     </>
   );
