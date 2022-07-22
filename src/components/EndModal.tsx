@@ -33,10 +33,12 @@ export default function EndModal({
                   Player {id}
                 </span>
 
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Score:</span>
-                  <span className="font-medium">{score}</span>
-                </div>
+                {!isSinglePlayer && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Score:</span>
+                    <span className="font-medium">{score}</span>
+                  </div>
+                )}
 
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Moves:</span>
